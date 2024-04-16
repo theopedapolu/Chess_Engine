@@ -19,8 +19,8 @@ function makeComputerMove() {
     bestMove = null
     for (let move of possibleMoves) {
         game.move(move)
-        let score = minimax_alpha_beta(2,true, Number.MIN_VALUE, Number.MAX_VALUE)
-        if (score < bestScore) {
+        let score = minimax_alpha_beta(2,true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
+        if (score <= bestScore) {
             bestScore = score
             bestMove = move
         }
@@ -37,21 +37,27 @@ function minimax_alpha_beta(depth, isMaximizer, alpha, beta) {
 
     possibleMoves = game.moves()
     if (isMaximizer) {
-        let bestScore = Number.MIN_VALUE;
+        let bestScore = Number.NEGATIVE_INFINITY;
         for (let move of possibleMoves) {
             game.move(move)
-            bestScore = Math.max(bestScore, minimax_alpha_beta(depth-1,!isMaximizer))
-            if (bestScore >= beta) return bestScore
+            bestScore = Math.max(bestScore, minimax_alpha_beta(depth-1, !isMaximizer, alpha, beta))
+            if (bestScore >= beta) {
+                game.undo()
+                return bestScore
+            }
             alpha = Math.max(alpha, bestScore)
             game.undo()
         }
         return bestScore
     } else {
-        let bestScore = Number.MAX_VALUE;
+        let bestScore = Number.POSITIVE_INFINITY;
         for (let move of possibleMoves) {
             game.move(move)
-            bestScore = Math.min(bestScore, minimax_alpha_beta(depth-1,!isMaximizer))
-            if (bestScore <= alpha) return bestScore
+            bestScore = Math.min(bestScore, minimax_alpha_beta(depth-1, !isMaximizer, alpha, beta))
+            if (bestScore <= alpha) {
+                game.undo()
+                return bestScore
+            }
             beta = Math.min(beta, bestScore)
             game.undo()
         }
