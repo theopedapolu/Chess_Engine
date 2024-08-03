@@ -1,7 +1,7 @@
 //import { evaluateBoard } from './evaluation_function.js';
-
 var board = null
 var game = new Chess()
+var cache = new Map()
 
 
 function onDragStart(source, piece, position, orientation) {
@@ -14,12 +14,22 @@ function onDragStart(source, piece, position, orientation) {
 function makeComputerMove() {
     let possibleMoves = game.moves()
     if (possibleMoves.length === 0) return
+    
+    // Get initial evaluations
+    let evals = new Map()
+    for (let move of possibleMoves) {
+        game.move(move)
+        evals.set(move,evaluatePosition(game, cache))
+        game.undo()
+    }
 
+    // Pre-sort moves
+    possibleMoves.sort((a,b) => (evals.get(a)-evals.get(b)))
     bestScore = Number.MAX_VALUE
     bestMove = null
     for (let move of possibleMoves) {
         game.move(move)
-        let score = minimax_alpha_beta(2,true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
+        let score = minimax_alpha_beta(3,true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY)
         if (score <= bestScore) {
             bestScore = score
             bestMove = move
@@ -32,7 +42,7 @@ function makeComputerMove() {
 
 function minimax_alpha_beta(depth, isMaximizer, alpha, beta) {
     if (depth == 0) {
-        return evaluatePosition(game)
+        return evaluatePosition(game, cache)
     }
 
     possibleMoves = game.moves()
